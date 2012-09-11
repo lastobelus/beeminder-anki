@@ -23,6 +23,6 @@ Known Issues / TODO:
 
 Contact / Bugs:
 
-muflax at <mail at muflax dot com> or on Github at <https://github.com/muflax/beeminder-anki>.
+muflax at (mail at muflax dot com) or on Github at <https://github.com/muflax/beeminder-anki>.
 
 My own Beeminder graphs are at <https://www.beeminder.com/muflax/goals/anki> and <https://www.beeminder.com/muflax/goals/anki-new>.
