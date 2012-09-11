@@ -4,13 +4,13 @@ It supports tracking all your reviews and just new cards. It's still somewhat ex
 
 Installation:
 
-Copy beeminder.py into your add-on folder or install through Anki (Tools -> Add-ons -> Browse & Install) with code [3491889895](https://beta.ankiweb.net/shared/info/3491889895).
+Copy Beeminder_Sync.py into your add-on folder (~/.anki/addons/) or install through Anki (Tools -> Add-ons -> Browse & Install) with code [3491889895](https://beta.ankiweb.net/shared/info/3491889895).
 
 Instructions:
 
 1. Create goal at Beeminder.
 2. Use type *Odometer*. This is required!
-3. Set variables in add-on file (beeminder.py in your add-on folder).
+3. Set variables in add-on file (Beeminder_Sync.py in your add-on folder).
 4. Review!
 5. Sync to AnkiWeb. This also sends the latest stats to Beeminder.
 
