@@ -88,7 +88,7 @@ def reportCards(col, total, count_type, goal, offset=0, force=False):
         raise Exception("Beeminder total smaller than before")
     
     # build data
-    date = datetime.datetime.today()
+    date = timestamp(datetime.datetime.today())
     comment = "anki update (+%d)" % (total - last_total)
     data = {
         "date": date,
@@ -113,7 +113,7 @@ def sendApi(account, token, goal, data):
     headers = {"Content-type": "application/x-www-form-urlencoded",
                "Accept": "text/plain"}
 
-    params = urllib.urlencode({"timestamp": data["date"].strftime("%s"),
+    params = urllib.urlencode({"timestamp": data["date"],
                                "value": data["value"],
                                "comment": data["comment"],
                                "auth_token": token})
@@ -133,5 +133,12 @@ def beeminderUpdate(obj, _old=None):
 
     return ret
 
+# convert time to timestamp because python sucks
+def timestamp(time):
+    epoch = datetime.datetime.utcfromtimestamp(0)
+    delta = time - epoch
+    timestamp = "%d" % delta.total_seconds()
+    return timestamp
+    
 # run update whenever we sync a deck
 anki.sync.Syncer.sync = wrap(anki.sync.Syncer.sync, beeminderUpdate, "around")
