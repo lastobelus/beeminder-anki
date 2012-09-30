@@ -49,27 +49,32 @@ def checkCollection(col=None, force=False):
     if col is None:
         return
 
-    # counts
-    reps      = col.db.first("select count() from revlog")[0]
-    new_cards = col.db.first("select count() from revlog where type = 0 and ivl > 0")[0]
-
-    # timestamps
-    last_timestamp = col.conf.get("beeminderRepTimestamp", 0)
-    timestamp      = col.db.first("select id from revlog order by id desc limit 1")[0]
-
+    # reviews
     if REP_GOAL:
-        reportCards(col, reps,      "beeminderRepTotal", REP_GOAL, REP_OFFSET)
+        reps           = col.db.first("select count() from revlog")[0]
+        last_timestamp = col.conf.get("beeminderRepTimestamp", 0)
+        timestamp      = col.db.first("select id/1000 from revlog order by id desc limit 1")[0]
+        reportCards(col, reps, timestamp, "beeminderRepTotal", REP_GOAL, REP_OFFSET)
+
+        if (force or timestamp != last_timestamp) and SEND_DATA:
+            col.conf["beeminderRepTimestamp"] = timestamp
+            col.setMod()
+
+    # new cards
     if NEW_GOAL:
-        reportCards(col, new_cards, "beeminderNewTotal", NEW_GOAL, NEW_OFFSET)
+        new_cards      = col.db.first("select count() from revlog where type = 0 and ivl > 0")[0]
+        last_timestamp = col.conf.get("beeminderNewTimestamp", 0)
+        timestamp      = col.db.first("select id/1000 from revlog where type = 0 and ivl > 0 order by id desc limit 1")[0]
+        reportCards(col, new_cards, timestamp, "beeminderNewTotal", NEW_GOAL, NEW_OFFSET)
     
-    if (force or timestamp != last_timestamp) and SEND_DATA:
-        col.conf["beeminderRepTimestamp"] = timestamp
-        col.setMod()
+        if (force or timestamp != last_timestamp) and SEND_DATA:
+            col.conf["beeminderNewTimestamp"] = timestamp
+            col.setMod()
 
-        if force:
-            showInfo("Synced with Beeminder.")
+    if force and (REP_GOAL or NEW_GOAL):
+        showInfo("Synced with Beeminder.")
 
-def reportCards(col, total, count_type, goal, offset=0, force=False):
+def reportCards(col, total, timestamp, count_type, goal, offset=0, force=False):
     """Sync card counts and send them to beeminder."""
 
     if not SEND_DATA:
@@ -88,7 +93,7 @@ def reportCards(col, total, count_type, goal, offset=0, force=False):
         raise Exception("Beeminder total smaller than before")
     
     # build data
-    date = timestamp(datetime.datetime.today())
+    date = "%d" % timestamp
     comment = "anki update (+%d)" % (total - last_total)
     data = {
         "date": date,
