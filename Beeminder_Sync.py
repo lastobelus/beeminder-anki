@@ -20,8 +20,8 @@ ACCOUNT = "your account" # beeminder account name
 TOKEN   = "your token"   # available at <https://www.beeminder.com/api/v1/auth_token.json>
 
 # Goals - Set either to "" if you don't use this kind of goal.
-REP_GOAL = "" # goal for total reviews / day; 
-NEW_GOAL = "" # goal for new cards / day; 
+REP_GOAL = "" # goal for total reviews / day;
+NEW_GOAL = "" # goal for new cards / day;
 
 # Offsets - Skip that many earlier reps so your graph can start at 0 (for old decks - set to 0 if unsure).
 REP_OFFSET = 0
@@ -66,7 +66,7 @@ def checkCollection(col=None, force=False):
         last_timestamp = col.conf.get("beeminderNewTimestamp", 0)
         timestamp      = col.db.first("select id/1000 from revlog where type = 0 and ivl > 0 order by id desc limit 1")[0]
         reportCards(col, new_cards, timestamp, "beeminderNewTotal", NEW_GOAL, NEW_OFFSET)
-    
+
         if (force or timestamp != last_timestamp) and SEND_DATA:
             col.conf["beeminderNewTimestamp"] = timestamp
             col.setMod()
@@ -81,9 +81,9 @@ def reportCards(col, total, timestamp, count_type, goal, offset=0, force=False):
         print "type:", count_type, "count:", total
 
     # get last count and new total
-    last_total = col.conf.get(count_type, offset)
+    last_total = col.conf.get(count_type, 0)
     total      = max(0, total - offset)
-    
+
     if not force and (total <= 0 or total == last_total):
         if not SEND_DATA:
             print "nothing to report..."
@@ -91,7 +91,7 @@ def reportCards(col, total, timestamp, count_type, goal, offset=0, force=False):
 
     if total < last_total: #something went wrong
         raise Exception("Beeminder total smaller than before")
-    
+
     # build data
     date = "%d" % timestamp
     comment = "anki update (+%d)" % (total - last_total)
@@ -100,7 +100,7 @@ def reportCards(col, total, timestamp, count_type, goal, offset=0, force=False):
         "value": total,
         "comment": comment,
     }
-    
+
     if SEND_DATA:
         account = ACCOUNT
         token = TOKEN
@@ -114,7 +114,7 @@ def sendApi(account, token, goal, data):
     base = "www.beeminder.com"
     cmd = "datapoints"
     api = "/api/v1/users/%s/goals/%s/%s.json" % (account, goal, cmd)
-    
+
     headers = {"Content-type": "application/x-www-form-urlencoded",
                "Accept": "text/plain"}
 
@@ -144,6 +144,6 @@ def timestamp(time):
     delta = time - epoch
     timestamp = "%d" % delta.total_seconds()
     return timestamp
-    
+
 # run update whenever we sync a deck
 anki.sync.Syncer.sync = wrap(anki.sync.Syncer.sync, beeminderUpdate, "around")
